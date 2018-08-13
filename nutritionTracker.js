@@ -30,6 +30,7 @@ function isSet(val) {
 }
 
 function getDate(offset) {
+    offset = offset || 0;
     var date = new Date();
     date.setDate(date.getDate() - offset);
     return  date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
@@ -49,53 +50,61 @@ function changeDailyTotalCalories(totalCalories) {
     dailyTotalkCals = totalCalories || DEFAULT_DAILY_TOTAL_CALORIES;
 }
 
-function createFoodConsumedTable(dateOffset) {
+function updateFoodConsumedTable(dateOffset) {
     var dateString = getDate(dateOffset);
     var rows = [];
     rows.push(["Serial Number", "Food Item", "Calories"]);//todo: later add functionality to delete food item
 
-    var foodConsumed = chrome.storage.sync.get(FOOD_CONSUMED_KEY);
-    foodConsumed = foodConsumed || {};
+    chrome.storage.sync.get(FOOD_CONSUMED_KEY, function (result) {
+        var foodConsumed = result[FOOD_CONSUMED_KEY];
+        foodConsumed = foodConsumed || {};
 
-    var foodConsumedOnGivenDate = foodConsumed[dateString];
-    foodConsumedOnGivenDate = foodConsumedOnGivenDate || [];
-    let serNo = 1;
-    for (var foodItem in foodConsumedOnGivenDate) {
-        if (foodConsumedOnGivenDate.hasOwnProperty(foodItem) && foodItemsInMemoryDB.hasOwnProperty(foodItem)) {
-            rows.push([serNo++, foodItemsInMemoryDB[foodItem][0], foodItemsInMemoryDB[foodItem][1]]);
-        }
-    }
-
-    var table = document.createElement("table");
-    table.setAttribute("class", tableClass);
-    var tableBody = document.createElement("tbody");
-
-    var columnCount = rows[0].length;
-    for (var i = 0; i < rows.length; i++) {
-        if (i === 0) {
-            var header = document.createElement("tr");
-            for (var j = 0; j < columnCount; j++) {
-                var headerCell = document.createElement("th");
-                var headerCellText = document.createTextNode(rows[i][j]);
-                headerCell.appendChild(headerCellText);
-                header.appendChild(headerCell);
+        var foodConsumedOnGivenDate = foodConsumed[dateString];
+        foodConsumedOnGivenDate = foodConsumedOnGivenDate || [];
+        let serNo = 1;
+        for (var ind in foodConsumedOnGivenDate) {
+            if (foodConsumedOnGivenDate.hasOwnProperty(ind)) {
+                var foodItem = foodConsumedOnGivenDate[ind];
+                if (foodItemsInMemoryDB.hasOwnProperty(foodItem)) {
+                    rows.push([serNo++, foodItemsInMemoryDB[foodItem][0], foodItemsInMemoryDB[foodItem][1]]);
+                }
             }
-            tableBody.appendChild(header);
-        } else {
-            var row = document.createElement("tr");
-            for (let j = 0; j < columnCount; j++) {
-                var cell = document.createElement("td");
-                var cellText = document.createTextNode(rows[i][j]);
-                cell.appendChild(cellText);
-                row.appendChild(cell);
-            }
-            tableBody.appendChild(row);
         }
-    }
 
-    table.appendChild(tableBody);
-    var foodTable = document.getElementById("foodConsumedTable");
-    foodTable.appendChild(table);
+        var table = document.createElement("table");
+        table.setAttribute("class", tableClass);
+        var tableBody = document.createElement("tbody");
+
+        var columnCount = rows[0].length;
+        for (var i = 0; i < rows.length; i++) {
+            if (i === 0) {
+                var header = document.createElement("tr");
+                for (var j = 0; j < columnCount; j++) {
+                    var headerCell = document.createElement("th");
+                    var headerCellText = document.createTextNode(rows[i][j]);
+                    headerCell.appendChild(headerCellText);
+                    header.appendChild(headerCell);
+                }
+                tableBody.appendChild(header);
+            } else {
+                var row = document.createElement("tr");
+                for (let j = 0; j < columnCount; j++) {
+                    var cell = document.createElement("td");
+                    var cellText = document.createTextNode(rows[i][j]);
+                    cell.appendChild(cellText);
+                    row.appendChild(cell);
+                }
+                tableBody.appendChild(row);
+            }
+        }
+
+        table.appendChild(tableBody);
+        var foodTable = document.getElementById("foodConsumedTable");
+        if (foodTable.childElementCount > 0) {
+            foodTable.removeChild(foodTable.firstElementChild);
+        }
+        foodTable.appendChild(table);
+    });
 }
 
 function addFoodItem(dateOffset, itemId) {
@@ -110,6 +119,7 @@ function addFoodItem(dateOffset, itemId) {
         foodConsumed[dateString].push(itemId);
         chrome.storage.sync.set({FOOD_CONSUMED: foodConsumed}, function () {
             // console.log('Added food item ' + foodConsumed);
+            updateFoodConsumedTable(dateOffset);
         });
     });
 }
@@ -121,6 +131,7 @@ function deleteFoodItem(dateOffset, itemId) {//todo
 
 function addHandlers() {
     document.getElementById("addFoodButton").addEventListener("click", addFoodItem);
+    updateFoodConsumedTable(0);
 }
 
 window.addEventListener("load", addHandlers, false);
