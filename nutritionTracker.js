@@ -124,6 +124,27 @@ function addFoodItem(dateOffset, itemId) {
     });
 }
 
+function getAllChromeStorageKeys() {
+    chrome.storage.sync.get(null, function(items) {
+        var allKeys = Object.keys(items);
+        console.log(allKeys);
+    });
+}
+
+function resetTrackingForDay() {
+    var dateOffset = 0;
+    chrome.storage.sync.get(FOOD_CONSUMED_KEY, function (result) {
+        var foodConsumed = result[FOOD_CONSUMED_KEY];
+        foodConsumed = foodConsumed || {};
+
+        var dateString = getDate(dateOffset);
+        delete foodConsumed[dateString];
+        chrome.storage.sync.set({FOOD_CONSUMED: foodConsumed}, function () {
+            updateFoodConsumedTable(dateOffset);
+        });
+    });
+}
+
 function deleteFoodItem(dateOffset, itemId) {//todo
 
 }
@@ -132,6 +153,7 @@ function deleteFoodItem(dateOffset, itemId) {//todo
 function addHandlers() {
     document.getElementById("addFoodButton").addEventListener("click", addFoodItem);
     updateFoodConsumedTable(0);
+    document.getElementById("resetFoodForToday").addEventListener("click", resetTrackingForDay);
 }
 
 window.addEventListener("load", addHandlers, false);
