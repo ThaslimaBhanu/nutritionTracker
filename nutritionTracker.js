@@ -4,6 +4,7 @@
 
 const DAILY_TOTAL_CALORIES_KEY = "dailyTotalCalories";
 const FOOD_CONSUMED_KEY = "FOOD_CONSUMED";
+const CALORIES_CONSUMED_KEY = "CALORIES_CONSUMED";
 const DEFAULT_DAILY_TOTAL_CALORIES = 1700;
 let dailyTotalkCals = DEFAULT_DAILY_TOTAL_CALORIES;
 
@@ -63,6 +64,7 @@ function changeDailyTotalCalories(totalCalories) {
 }
 
 function updateFoodConsumedTable(dateOffset) {
+    dateOffset = dateOffset || 0;
     var dateString = getDate(dateOffset);
     var rows = [];
     rows.push(["Serial Number", "Food Item", "Calories"]);//todo: later add functionality to delete food item
@@ -124,6 +126,42 @@ function getSelectedItemId() {
     return dropDownMenuElement.options[dropDownMenuElement.selectedIndex].value;
 }
 
+function updateTotalCaloriesConsumedLabelAndGraph(totalCaloriesForToday) {
+    var totalCalLabel = document.getElementById("totalCalConsumedToday");
+    totalCalLabel.innerHTML = "Calories consumed today:" + totalCaloriesForToday;
+}
+
+function updateTotalCaloriesConsumed(dateOffset) {
+    dateOffset = dateOffset || 0;
+    chrome.storage.sync.get(FOOD_CONSUMED_KEY, function (result) {
+        var foodConsumed = result[FOOD_CONSUMED_KEY];
+        foodConsumed = foodConsumed || {};
+
+        var dateString = getDate(dateOffset);
+        var foodConsumedForADay = foodConsumed[dateString];
+        let totalCal = 0;
+        for (let i in foodConsumedForADay) {//foodConsumedForADay is array
+            if (foodConsumedForADay.hasOwnProperty(i)) {
+                let itemId = foodConsumedForADay[i];
+                totalCal += foodItemsInMemoryDB[itemId][1];
+            }
+        }
+        chrome.storage.sync.get(CALORIES_CONSUMED_KEY, function (result) {
+            var caloriesConsumed = result[CALORIES_CONSUMED_KEY];
+            caloriesConsumed = caloriesConsumed || {};
+
+            var dateString = getDate(dateOffset);
+            caloriesConsumed[dateString] = totalCal;
+
+            chrome.storage.sync.set({CALORIES_CONSUMED: caloriesConsumed}, function () {
+                if (dateOffset === 0) {
+                    updateTotalCaloriesConsumedLabelAndGraph(totalCal);//todo: updateCaloriesConsumed graph and/or number displayed
+                }
+            });
+        });
+    });
+}
+
 function addFoodItem(dateOffset, itemId) {
     dateOffset = 0;//todo:
     itemId = itemId || getSelectedItemId();
@@ -136,6 +174,7 @@ function addFoodItem(dateOffset, itemId) {
         foodConsumed[dateString].push(itemId);
         chrome.storage.sync.set({FOOD_CONSUMED: foodConsumed}, function () {
             updateFoodConsumedTable(dateOffset);
+            updateTotalCaloriesConsumed(dateOffset);
         });
     });
 }
@@ -157,6 +196,7 @@ function resetTrackingForDay() {
         delete foodConsumed[dateString];
         chrome.storage.sync.set({FOOD_CONSUMED: foodConsumed}, function () {
             updateFoodConsumedTable(dateOffset);
+            updateTotalCaloriesConsumed(dateOffset);
         });
     });
 }
@@ -169,7 +209,8 @@ function deleteFoodItem(dateOffset, itemId) {//todo
 function addHandlers() {
     updateItemsInDropDownFoodMenu();
     document.getElementById("addFoodButton").addEventListener("click", addFoodItem);
-    updateFoodConsumedTable(0);
+    updateFoodConsumedTable();
+    updateTotalCaloriesConsumed();
     document.getElementById("resetFoodForToday").addEventListener("click", resetTrackingForDay);
 }
 
