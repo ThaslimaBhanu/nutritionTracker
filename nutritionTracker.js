@@ -119,9 +119,14 @@ function updateFoodConsumedTable(dateOffset) {
     });
 }
 
+function getSelectedItemId() {
+    var dropDownMenuElement = document.getElementById("dropdownFoodMenu");
+    return dropDownMenuElement.options[dropDownMenuElement.selectedIndex].value;
+}
+
 function addFoodItem(dateOffset, itemId) {
     dateOffset = 0;//todo:
-    itemId = itemId || 2;//todo: remove this later
+    itemId = itemId || getSelectedItemId();
     chrome.storage.sync.get(FOOD_CONSUMED_KEY, function (result) {
         var foodConsumed = result[FOOD_CONSUMED_KEY];
         foodConsumed = foodConsumed || {};
@@ -130,7 +135,6 @@ function addFoodItem(dateOffset, itemId) {
         foodConsumed[dateString] = foodConsumed[dateString] || [];
         foodConsumed[dateString].push(itemId);
         chrome.storage.sync.set({FOOD_CONSUMED: foodConsumed}, function () {
-            // console.log('Added food item ' + foodConsumed);
             updateFoodConsumedTable(dateOffset);
         });
     });
