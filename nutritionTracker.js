@@ -36,6 +36,18 @@ function getDate(offset) {
     return  date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
 }
 
+function updateItemsInDropDownFoodMenu() {
+    var dropDownMenuElement = document.getElementById("dropdownFoodMenu");
+    for (var foodItem in foodItemsInMemoryDB) {
+        if (foodItemsInMemoryDB.hasOwnProperty(foodItem)) {
+            var op = new Option();
+            op.value = foodItem;
+            op.text = foodItemsInMemoryDB[foodItem];
+            dropDownMenuElement.options.add(op);
+        }
+    }
+}
+
 function getRemainingCaloriesForToday() {
     var dateString = getDate(0);
     var remainingCalories = chrome.storage.sync.get(DAILY_TOTAL_CALORIES_KEY);
@@ -151,6 +163,7 @@ function deleteFoodItem(dateOffset, itemId) {//todo
 
 
 function addHandlers() {
+    updateItemsInDropDownFoodMenu();
     document.getElementById("addFoodButton").addEventListener("click", addFoodItem);
     updateFoodConsumedTable(0);
     document.getElementById("resetFoodForToday").addEventListener("click", resetTrackingForDay);
