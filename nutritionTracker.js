@@ -3,7 +3,7 @@
  */
 
 const DAILY_TOTAL_CALORIES_KEY = "dailyTotalCalories";
-const FOOD_CONSUMED_KEY = "foodConsumed";
+const FOOD_CONSUMED_KEY = "FOOD_CONSUMED";
 const DEFAULT_DAILY_TOTAL_CALORIES = 1700;
 let dailyTotalkCals = DEFAULT_DAILY_TOTAL_CALORIES;
 
@@ -32,7 +32,7 @@ function isSet(val) {
 function getDate(offset) {
     var date = new Date();
     date.setDate(date.getDate() - offset);
-    return date.getYear() + date.getMonth() + date.getDate();
+    return  date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
 }
 
 function getRemainingCaloriesForToday() {
@@ -94,18 +94,24 @@ function createFoodConsumedTable(dateOffset) {
     }
 
     table.appendChild(tableBody);
-    var foodTable = document.getElementById("foodTable");
+    var foodTable = document.getElementById("foodConsumedTable");
     foodTable.appendChild(table);
 }
 
 function addFoodItem(dateOffset, itemId) {
-    var foodConsumed = chrome.storage.sync.get(FOOD_CONSUMED_KEY);
-    foodConsumed = foodConsumed || {};
+    dateOffset = 0;//todo:
+    itemId = itemId || 2;//todo: remove this later
+    chrome.storage.sync.get(FOOD_CONSUMED_KEY, function (result) {
+        var foodConsumed = result[FOOD_CONSUMED_KEY];
+        foodConsumed = foodConsumed || {};
 
-    var dateString = getDate(dateOffset);
-    foodConsumed[dateString] = foodConsumed[dateString] || [];
-    foodConsumed[dateString].push(itemId);
-    chrome.storage.sync.set(foodConsumed);
+        var dateString = getDate(dateOffset);
+        foodConsumed[dateString] = foodConsumed[dateString] || [];
+        foodConsumed[dateString].push(itemId);
+        chrome.storage.sync.set({FOOD_CONSUMED: foodConsumed}, function () {
+            // console.log('Added food item ' + foodConsumed);
+        });
+    });
 }
 
 function deleteFoodItem(dateOffset, itemId) {//todo
@@ -113,4 +119,9 @@ function deleteFoodItem(dateOffset, itemId) {//todo
 }
 
 
+function addHandlers() {
+    document.getElementById("addFoodButton").addEventListener("click", addFoodItem);
+}
+
+window.addEventListener("load", addHandlers, false);
 
