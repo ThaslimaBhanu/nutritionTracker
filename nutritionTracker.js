@@ -175,6 +175,7 @@ function addFoodItem(dateOffset, itemId) {
         chrome.storage.sync.set({FOOD_CONSUMED: foodConsumed}, function () {
             updateFoodConsumedTable(dateOffset);
             updateTotalCaloriesConsumed(dateOffset);
+            //todo: update graphs for today
         });
     });
 }
@@ -205,6 +206,28 @@ function deleteFoodItem(dateOffset, itemId) {//todo
 
 }
 
+function drawWeeklyCaloriesChart() {
+    var data = new google.visualization.DataTable();
+    data.addColumn('number', 'X');
+    data.addColumn('number', 'Calories');
+
+    data.addRows([
+        [0, 0],   [1, 10],  [2, 23],  [3, 17],  [4, 18],  [5, 9]//todo: extract this data from chrome storage
+    ]);
+
+    var options = {
+        "hAxis": {
+            "title": "Date"
+        },
+        "vAxis": {
+            "title": "Calories"
+        },
+        "backgroundColor": "#f1f8e9"
+    };
+
+    var chart = new google.visualization.LineChart(document.getElementById('calories-consumed-chart-div'));
+    chart.draw(data, options);
+}
 
 function addHandlers() {
     updateItemsInDropDownFoodMenu();
@@ -212,6 +235,9 @@ function addHandlers() {
     updateFoodConsumedTable();
     updateTotalCaloriesConsumed();
     document.getElementById("resetFoodForToday").addEventListener("click", resetTrackingForDay);
+    google.charts.load('current', {packages: ['corechart', 'bar']});
+    google.charts.setOnLoadCallback(drawWeeklyCaloriesChart);
+    //todo: draw separate nutrition charts for protein, carb, etc for today
 }
 
 window.addEventListener("load", addHandlers, false);
