@@ -9,9 +9,30 @@ const DEFAULT_DAILY_TOTAL_CALORIES = 1700;
 let dailyTotalkCals = DEFAULT_DAILY_TOTAL_CALORIES;
 
 let foodItemsInMemoryDB = {//todo: read it from some file/db
-    1: ["1 Plain Roti", 100],
-    2: ["1 Small Pizza", 400],
-    3: ["1 Plate Papdi Chaat", 300]
+    1: ["Plain Roti", 100],
+    2: ["Small Pizza", 400],
+    3: ["Plate Papdi Chaat", 300],
+    4: ["Boiled Egg", 80],
+    5: ["Boiled Poached", 80],
+    6: ["Egg Fried",110],
+    7: ["Egg Omelet",120],
+    8: ["Bread slice", 45],
+    9: ["Bread slice with butter", 90],
+    10: ["Idli ", 100],
+    11: ["Dosa Plain", 120],
+    12: ["Dosa Masala", 250],
+    13: ["Cooked Rice Plain 1 Cup", 120],
+    14: ["Cooked Rice Fried 1Cup", 150],
+    15: ["Dal 1 Cup", 150],
+    16: ["Sambar 1 Cup", 150],
+    17: ["Curry", 150],
+    18: ["Salad 1 Cup", 100],
+    19: ["Tea with milk & sugar 1 Cup", 45],
+    20: ["Coffee with milk & sugar 1 Cup", 45],
+    21: ["Milk with sugar", 75],
+    22: ["Fruit juice concentrated", 120],
+    23: ["Ice-cream 1 Cup", 200],
+    24: ["Samosa", 100]
 };
 
 var tableClass = 'table table-sm table-bordered dark-border food-table';
